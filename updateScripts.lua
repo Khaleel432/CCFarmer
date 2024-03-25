@@ -11,13 +11,14 @@ local function updateScript()
 	local request = http.get(scriptToUpdate);
 	local scriptName = getScriptName(scriptToUpdate);
 	local isFileExists = fs.exists(scriptName)
-	print(scriptName)
 	if(isFileExists == false) then
 		local file = fs.open(scriptName, "w")
 		file.write(request.readAll())
 		file.close()
+	else
+		local fileSize = fs.getSize(scriptName)
+		print(fileSize)
 	end
-	print(fs.exists(scriptName))
 	request.close()
 end
 
