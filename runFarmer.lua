@@ -23,7 +23,7 @@ local function startFarming()
 	local fuelLevel = turtle.getFuelLevel()
 	print(fuelLevel)
 	print(turtle.getFuelLimit())
-	if (fuelLevel < minFuelLevel and !refuel()) then
+	if (fuelLevel < minFuelLevel and not(refuel())) then
 		pretty.pretty_print(turtle.inspectDown())
 		print("Insufficient fuel, please add fuel to the storage chest")
 		return
