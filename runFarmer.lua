@@ -9,7 +9,7 @@ local function findFuel()
 end
 
 local function refuel()
-	local chest = peripheral.find("minecraft:chest")
+	local chest = peripheral.wrap("bottom")
 	if (chest == nil) then
 		print("No storage chest found, please place storage chest with fuel below the turtle")
 	end
