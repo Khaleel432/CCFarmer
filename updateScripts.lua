@@ -23,23 +23,23 @@ local function getNumOfLines(file)
 end
 
 local function updateFile(filename, content)
-	local isFileExists = fs.exists(filename)
-	if(isFileExists == false) then
+	-- local isFileExists = fs.exists(filename)
+	-- if(isFileExists == false) then
 		local file = fs.open(filename, "w")
 		file.write(content)
 		file.close()
-	else
-		local tempFile = fs.open("tempFile", "w")
-		tempFile.write(content)
-		if (getNumOfLines("tempFile") ~= getNumOfLines(filename)) then
-			local scriptFile = fs.open(filename, "w+")
-			scriptFile.write(content)
-			scriptFile.close();
-			print("File updated")
-		end
-		tempFile.close()
-		fs.delete("tempFile")
-	end
+	-- else
+	-- 	local tempFile = fs.open("tempFile", "w")
+	-- 	tempFile.write(content)
+	-- 	if (getNumOfLines("tempFile") ~= getNumOfLines(filename)) then
+	-- 		local scriptFile = fs.open(filename, "w+")
+	-- 		scriptFile.write(content)
+	-- 		scriptFile.close();
+	-- 		print("File updated")
+	-- 	end
+	-- 	tempFile.close()
+	-- 	fs.delete("tempFile")
+	-- end
 end
 
 local function updateScript()
