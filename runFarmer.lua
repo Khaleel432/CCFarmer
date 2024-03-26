@@ -7,7 +7,7 @@ local function refuel()
 	print(textutils.serialise(inventory))
 	for slot, item in pairs(inventory) do
 		if (item.name == "minecraft:coal") then
-			inventory.pullItems(chest, slot, 1, 1)
+			chest.pushItems("up", slot, 1, 1)
 			return true
 		end
 	end
