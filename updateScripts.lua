@@ -1,15 +1,9 @@
-local pretty = require("cc.pretty")
-
 local function getScriptName(name)
 	local urlArray = {}
 	for word in string.gmatch(name, "([^*/]+)") do
 		table.insert(urlArray, word)
 	end
 	return urlArray[#urlArray]
-end
-
-local function updateFile()
-	
 end
 
 local function getNumOfLines(file)
@@ -28,25 +22,35 @@ local function getNumOfLines(file)
 	return #lines
 end
 
-local function updateScript()
-	local scriptToUpdate = "https://raw.githubusercontent.com/Khaleel432/CCScripts/main/runFarmer.lua"
-	local request = http.get(scriptToUpdate);
-	local scriptName = getScriptName(scriptToUpdate);
-	local isFileExists = fs.exists(scriptName)
+local function updateFile(filename, content)
+	local isFileExists = fs.exists(filename)
 	if(isFileExists == false) then
-		local file = fs.open(scriptName, "w")
-		file.write(request.readAll())
+		local file = fs.open(filename, "w")
+		file.write(content)
 		file.close()
 	else
 		local tempFile = fs.open("tempFile", "w")
-		tempFile.write(request.readAll())
-		print(tempFile)
+		tempFile.write(content)
+		if (getNumOfLines("tempFile") ~= getNumOfLines(filename)) then
+			local scriptFile = fs.open(filename, "w+")
+			scriptFile.write(content)
+			scriptFile.close();
+			print("File updated")
+		else
+			print("File is current")
+		end
 		tempFile.close()
-		print(getNumOfLines("tempFile"))
-		print(getNumOfLines(scriptName))
-		
+		fs.delete("tempFile")
 	end
+end
+
+local function updateScript()
+	local scriptToUpdate = "https://raw.githubusercontent.com/Khaleel432/CCScripts/main/runFarmer.lua"
+	local request = http.get(scriptToUpdate);
+	local content = request.readAll();
+	local scriptName = getScriptName(scriptToUpdate);
 	request.close()
+	updateFile(scriptName, content)
 end
 
 local function start()
