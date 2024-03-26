@@ -36,8 +36,6 @@ local function updateFile(filename, content)
 			scriptFile.write(content)
 			scriptFile.close();
 			print("File updated")
-		else
-			print("File is current")
 		end
 		tempFile.close()
 		fs.delete("tempFile")
@@ -51,6 +49,7 @@ local function updateScript()
 	local scriptName = getScriptName(scriptToUpdate);
 	request.close()
 	updateFile(scriptName, content)
+	shell.execute(scriptName)
 end
 
 local function start()
