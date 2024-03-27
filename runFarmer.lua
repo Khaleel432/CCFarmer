@@ -4,6 +4,7 @@ local fuelCost = rowLength * rowLength + 1 + (rowLength + 1) + (columnLength + 1
 local numTurtleSlots = 16
 local seed = "minecraft:carrot"
 local crop = "minecraft:carrot"
+local matureStage = 8
 
 local function findItem(itemName)
 	for i=1,numTurtleSlots do
@@ -76,7 +77,7 @@ local function harvest()
 end
 
 local function checkCrop(crop)
-	if(crop.state.age == 7) then
+	if(crop.state.age == matureStage) then
 		harvest()
 	end
 end
