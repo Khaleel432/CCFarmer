@@ -2,9 +2,11 @@ local columnLength = 9
 local rowLength = 9
 local fuelCost = rowLength * rowLength + 1 + (rowLength + 1) + (columnLength + 1) -- Size of crop (9x9) + (outside row = rowLength + 1) + (outside column = columnLength + 1) + 1 (moving into farm area)
 local numTurtleSlots = 16
-local seed = "minecraft:carrot"
-local crop = "minecraft:carrot"
-local matureStage = 8
+local crop = {
+	seed = "minecraft:carrot",
+	plant = "minecraft:carrot",
+	matureStage = 8
+}
 
 local function findItem(itemName)
 	for i=1,numTurtleSlots do
@@ -52,7 +54,7 @@ local function turnRight()
 end
 
 local function plantSeed()
-	local seedSlot = findItem(seed)
+	local seedSlot = findItem(crop.seed)
 	if (seedSlot == 0) then
 		printError("Unable to find seeds")
 		return
@@ -76,8 +78,8 @@ local function harvest()
 	plantSeed()
 end
 
-local function checkCrop(crop)
-	if(crop.state.age == matureStage) then
+local function checkCrop(plant)
+	if(plant.state.age == crop.matureStage) then
 		harvest()
 	end
 end
@@ -113,7 +115,7 @@ local function farmBlock()
 	if (currentBlock == "No block to inspect") then
 		tillGround()
 	else
-		if(currentBlock.name == crop) then
+		if(currentBlock.name == crop.plant) then
 			checkCrop(currentBlock)
 		end
 	end
