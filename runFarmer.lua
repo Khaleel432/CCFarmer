@@ -62,10 +62,11 @@ end
 
 local function tillGround()
 	local didTill, result = turtle.digDown()
-	if(not(didTill) or result ~= "Nothing to dig here") then
-		printError("Unable to plant seeds here")
-	else
+	if(didTill or result == "Nothing to dig here") then
 		plantSeed()
+	else
+		printError("Unable to plant seeds here")
+		printError(result)
 	end
 end
 
