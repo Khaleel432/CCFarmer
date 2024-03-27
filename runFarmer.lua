@@ -4,8 +4,8 @@ local fuelCost = rowLength * rowLength + 1 + (rowLength + 1) + (columnLength + 1
 local numTurtleSlots = 16
 local crop = {
 	seed = "minecraft:carrot",
-	plant = "minecraft:carrot",
-	matureStage = 8
+	plant = "minecraft:carrots",
+	matureStage = 7
 }
 
 local function findItem(itemName)
