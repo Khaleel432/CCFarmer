@@ -17,7 +17,9 @@ end
 
 local function refuel()
 	local chest = peripheral.wrap("bottom")
-	if (chest == nil or chest.name ~= "minecraft:chest") then
+	local name = peripheral.getName(chest)
+	local type = peripheral.getType(name)
+	if (chest == nil or type ~= "minecraft:chest") then
 		printError("No storage chest found, please place storage chest with fuel below the turtle")
 		return false
 	end
