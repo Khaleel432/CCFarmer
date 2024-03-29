@@ -139,6 +139,7 @@ local function dumpInventory()
 			end
 		end
 	end
+	return true
 end
 
 local function farmBlock() 

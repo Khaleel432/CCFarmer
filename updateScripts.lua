@@ -22,10 +22,10 @@ local function getNumOfLines(file)
 	return #lines
 end
 
-local function updateFile(filename, content)
+local function updateFile(filepath, content)
 	-- local isFileExists = fs.exists(filename)
 	-- if(isFileExists == false) then
-		local file = fs.open(filename, "w")
+		local file = fs.open(filepath, "w")
 		file.write(content)
 		file.close()
 	-- else
@@ -47,9 +47,11 @@ local function updateScript()
 	local request = http.get(scriptToUpdate);
 	local content = request.readAll();
 	local scriptName = getScriptName(scriptToUpdate);
+	local filepath = fs.combine("/startup",scriptName)
+	print("File saved to " .. filepath)
 	request.close()
-	updateFile(scriptName, content)
-	shell.execute(scriptName)
+	updateFile(filepath, content)
+	shell.execute(filepath)
 end
 
 local function start()
