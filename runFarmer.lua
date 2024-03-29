@@ -111,30 +111,6 @@ local function refuel()
 		end
 	end
 	return false
-	-- local chest = peripheral.wrap("bottom")
-	-- local name = peripheral.getName(chest)
-	-- local type = peripheral.getType(name)
-	-- if (chest == nil or type ~= "minecraft:chest") then
-	-- 	printError("No storage chest found, please place storage chest with fuel below the turtle")
-	-- 	return false
-	-- end
-	-- local inventory = chest.list()
-	-- for slot, item in pairs(inventory) do
-	-- 	if (item.name == "minecraft:coal") then
-	-- 		chest.pushItems("bottom", slot, nil, 1)
-	-- 		turtle.suckDown(1)
-	-- 		local fuelSlot = findItem("minecraft:coal")
-	-- 		if (fuelSlot == 0 ) then
-	-- 			printError("No fuel source found")
-	-- 			return false
-	-- 		end
-	-- 		turtle.select(fuelSlot)
-	-- 		turtle.refuel(1)
-	-- 		turtle.select(1)
-	-- 		return true
-	-- 	end
-	-- end
-	-- return false
 end
 
 local function dumpInventory()
