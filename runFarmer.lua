@@ -2,6 +2,11 @@ local columnLength = 9
 local rowLength = 9
 local fuelCost = rowLength * rowLength + 1 + (rowLength + 1) + (columnLength + 1) -- Size of crop (9x9) + (outside row = rowLength + 1) + (outside column = columnLength + 1) + 1 (moving into farm area)
 local numTurtleSlots = 16
+local crop = {
+	seed = "minecraft:carrot",
+	plant = "minecraft:carrots",
+	matureStage = 7
+}
 
 local function findItem(itemName)
 	for i=1,numTurtleSlots do
@@ -12,32 +17,7 @@ local function findItem(itemName)
 			end
 		end
 	end
-	return 0
-end
-
-local function refuel()
-	local chest = peripheral.wrap("bottom")
-	if (chest == nil or chest.name ~= "minecraft:chest") then
-		printError("No storage chest found, please place storage chest with fuel below the turtle")
-		return false
-	end
-	local inventory = chest.list()
-	for slot, item in pairs(inventory) do
-		if (item.name == "minecraft:coal") then
-			chest.pushItems("bottom", slot, nil, 1)
-			turtle.suckDown(1)
-			local fuelSlot = findItem("minecraft:coal")
-			if (fuelSlot == 0 ) then
-				printError("No fuel source found")
-				return false
-			end
-			turtle.select(fuelSlot)
-			turtle.refuel(1)
-			turtle.select(1)
-			return true
-		end
-	end
-	return false
+	return nil
 end
 
 local function turnRight()
@@ -47,8 +27,8 @@ local function turnRight()
 end
 
 local function plantSeed()
-	local seedSlot = findItem("minecraft:wheat_seeds")
-	if (seedSlot == 0) then
+	local seedSlot = findItem(crop.seed)
+	if (seedSlot == nil) then
 		printError("Unable to find seeds")
 		return
 	end
@@ -58,10 +38,11 @@ end
 
 local function tillGround()
 	local didTill, result = turtle.digDown()
-	if(didTill) then
+	if(didTill or result == "Nothing to dig here") then
 		plantSeed()
-	elseif(result == "No block to inspect") then
-		printError("Cannot plant here")
+	else
+		printError("Unable to plant seeds here")
+		printError(result)
 	end
 end
 
@@ -70,8 +51,8 @@ local function harvest()
 	plantSeed()
 end
 
-local function checkCrop(crop)
-	if(crop.state.age == 7) then
+local function checkCrop(plant)
+	if(plant.state.age == crop.matureStage) then
 		harvest()
 	end
 end
@@ -82,24 +63,106 @@ local function save(fileName, content)
 	file.close()
 end
 
+local function getStorages()
+	local modem = peripheral.find("modem")
+	if (modem == nil) then
+		printError("Unable to find modem")
+		return nil
+	end
+	local storages = modem.getNamesRemote()
+	local storageTable = {}
+	for i = 1, #storages do
+		local storageName = storages[i]
+		local storage = peripheral.wrap(storageName)
+		for slot, item in pairs(storage.list()) do
+			storageTable[item.name] = {
+				name = storageName,
+				slot = slot
+			}
+		end
+	end
+	return storageTable
+end
+
+local function refuel()
+	local modem = peripheral.find("modem")
+	if(modem == nil) then
+		printError("Unable to find modem")
+		return nil
+	end
+	local storageTable = getStorages()
+	if(next(storageTable) == nil) then
+		printError("No fuel found in connected storage")
+		return nil
+	end
+	for item, storageInfo in pairs(storageTable) do
+		if(item == "minecraft:coal") then
+			local storage = peripheral.wrap(storageInfo.name)
+			storage.pushItems(modem.getNameLocal(),storageInfo.slot,1)
+			local fuelSlot = findItem("minecraft:coal")
+			if (fuelSlot == nil ) then
+				printError("No fuel source found")
+				return false
+			end
+			turtle.select(fuelSlot)
+			turtle.refuel(1)
+			turtle.select(1)
+			return true
+		end
+	end
+	return false
+	-- local chest = peripheral.wrap("bottom")
+	-- local name = peripheral.getName(chest)
+	-- local type = peripheral.getType(name)
+	-- if (chest == nil or type ~= "minecraft:chest") then
+	-- 	printError("No storage chest found, please place storage chest with fuel below the turtle")
+	-- 	return false
+	-- end
+	-- local inventory = chest.list()
+	-- for slot, item in pairs(inventory) do
+	-- 	if (item.name == "minecraft:coal") then
+	-- 		chest.pushItems("bottom", slot, nil, 1)
+	-- 		turtle.suckDown(1)
+	-- 		local fuelSlot = findItem("minecraft:coal")
+	-- 		if (fuelSlot == 0 ) then
+	-- 			printError("No fuel source found")
+	-- 			return false
+	-- 		end
+	-- 		turtle.select(fuelSlot)
+	-- 		turtle.refuel(1)
+	-- 		turtle.select(1)
+	-- 		return true
+	-- 	end
+	-- end
+	-- return false
+end
+
 local function dumpInventory()
-	local didInspect, chest = turtle.inspectDown()
-	if(chest.name == "minecraft:chest") then
-		for i=1,numTurtleSlots do
-			turtle.select(i)
-			local didDrop, reason = turtle.dropDown()
-			if(not(didDrop)) then
-				if(reason ~= "No items to drop") then
-					printError(reason)
-					return -1
+	local modem = peripheral.find("modem")
+	if (modem == nil) then
+		printError("Unable to find modem")
+		return nil
+	end
+	local storageTable = getStorages()
+	if(next(storageTable) == nil) then
+		printError("No storage found, cannot store items")
+		return nil
+	end
+	for i=1,numTurtleSlots do
+		local item = turtle.getItemDetail(i)
+		if(item ~= nil) then
+			local storageInfo = storageTable[item.name]
+			if(storageInfo == nil) then
+				printError("No storage for: " .. item.name)
+			else
+				local storage = peripheral.wrap(storageInfo.name)
+				local itemsTransferred = storage.pullItems(modem.getNameLocal(), i)
+				if(itemsTransferred == 0) then
+					printError("Unable to store items, please add more storage space")
 				end
 			end
 		end
-	else
-		printError("Cannot dump contents, no chest found")
-		return -1
 	end
-	return 1
 end
 
 local function farmBlock() 
@@ -107,7 +170,7 @@ local function farmBlock()
 	if (currentBlock == "No block to inspect") then
 		tillGround()
 	else
-		if(currentBlock.name == "minecraft:wheat") then
+		if(currentBlock.name == crop.plant) then
 			checkCrop(currentBlock)
 		end
 	end
@@ -159,12 +222,56 @@ local function handleCrops()
 	resetPosition()
 end
 
+local function findEmptySlot()
+	for i=1,numTurtleSlots do
+		if(turtle.getItemDetail(i)==nil) then
+			return i
+		end
+	end
+	return nil
+end
+
+local function isDiamondHoe(didEquip, slot)
+	if(didEquip ~= nil) then
+		local tool = turtle.getItemDetail(slot)
+		if(tool ~= nil) then
+			turtle.equipLeft()
+			if (tool.name == "minecraft:diamond_hoe") then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+local function isFarmingTurtle()
+	local didFindHoe = false
+	local slot = findEmptySlot()
+	if(slot == nil) then
+		return false
+	end
+	turtle.select(slot)
+	local didEquip, reason = turtle.equipLeft()
+	didFindHoe = isDiamondHoe(didEquip,slot)
+	if(didFindHoe) then
+		return true
+	end
+	didEquip, reason = turtle.equipRight()
+	didFindHoe = isDiamondHoe(didEquip,slot)
+	if(didFindHoe) then
+		return true
+	end
+	return false
+end
+
 local function startFarming()
 	print("Farmer v0.2")
-	print("Farming...")
-	print("Checking fuel")
 	local errorFlag = false
-	while true do
+	if(not(isFarmingTurtle())) then
+		printError("Please equip diamond hoe")
+		return
+	end
+	while not(errorFlag) do
 		while turtle.getFuelLevel() < fuelCost do
 			print("Fueling up")
 			if(not(refuel())) then
@@ -177,7 +284,7 @@ local function startFarming()
 			break
 		end
 		handleCrops()
-		if(dumpInventory() == -1) then
+		if(dumpInventory() == nil) then
 			errorFlag = true
 			break
 		end
